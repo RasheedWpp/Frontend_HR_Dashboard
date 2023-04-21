@@ -1,10 +1,10 @@
 import { SET_VALUE } from '../actions/user';
 
 const initialState = {
-    value: "rasheed",
+    value: "ahmed",
   };
   
-  const valueReducer = (state = initialState, action) => {
+  const DataReducer = (state = initialState, action) => {
     switch (action.type) {
       case SET_VALUE:
         return {
@@ -16,5 +16,5 @@ const initialState = {
     }
   };
   
-  export default valueReducer;
+  export default DataReducer;
   

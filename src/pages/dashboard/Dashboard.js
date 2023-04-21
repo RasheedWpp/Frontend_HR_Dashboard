@@ -8,23 +8,69 @@ import Map from "./components/am4chartMap/am4chartMap";
 import Rickshaw from "./components/rickshaw/Rickshaw";
 
 import AnimateNumber from "react-animated-number";
-
+import { withRouter, Redirect, Link } from 'react-router-dom';
 import s from "./Dashboard.module.scss";
-
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import peopleA1 from "../../assets/people/a1.jpg";
 import peopleA2 from "../../assets/people/a2.jpg";
 import peopleA5 from "../../assets/people/a5.jpg";
 import peopleA4 from "../../assets/people/a4.jpg";
 import { Container, Alert, Button, FormGroup, InputGroup, InputGroupAddon, InputGroupText } from 'reactstrap';
-
+import { setData,uploadExcelData } from "../../actions/user";
 class Dashboard extends React.Component {
+  static propTypes = {
+
+    dispatch: PropTypes.func.isRequired,
+    value: PropTypes.string.isRequired,
+    setData: PropTypes.func.isRequired,
+
+  };
   constructor(props) {
     super(props);
     this.state = {
       graph: null,
+      excelFile:null,
       checkedArr: [false, false, false],
     };
     this.checkTable = this.checkTable.bind(this);
+    this.uploadFile = this.uploadFile.bind(this);
+    this.handleExcelFileUpload = this.handleExcelFileUpload.bind(this);
+  }
+  uploadFile(e) {
+    e.preventDefault();
+    console.log("fileDtaa",(this.state.excelFile))
+    // this.props.dispatchuploadExcelData(this.state.excelFile);
+    const sessionTokenStored = localStorage.getItem("sessionToken");
+    // console.log(this.state.excelFile)
+        //   e.preventDefault();
+        const formData = new FormData();
+        formData.append('file', this.state.excelFile);
+        const dataSize = [...formData.entries()].map(([key, value]) => {
+            return `${key}=${value}`;
+          }).join('&').length;
+        console.log((dataSize / 1024).toFixed(2))
+        fetch('http://localhost:5000/upload', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            Authorization: sessionTokenStored
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('File uploaded successfully:', data);
+          alert("File uploaded successfully:")
+          
+        })
+        .catch(error => {
+          alert(error)
+          console.error('Error uploading file:', error);
+        });
+        this.setState({ excelFile: "" })
+  }
+  handleExcelFileUpload(event) {
+    this.setState({ excelFile: event.target.files[0] });
   }
 
   checkTable(id) {
@@ -55,6 +101,8 @@ class Dashboard extends React.Component {
   }
 
   render() {
+    const { value, setData } = this.props;
+        console.log(value.value)
     return (
       <div className={s.root}>
       <form style={{ display: 'flex', alignItems: 'center' }}>
@@ -68,14 +116,11 @@ class Dashboard extends React.Component {
       <Label for="excel-file">Excel File</Label>
       <InputGroup className="input-group-no-border">
         <Input id="excel-file" type="file" accept=".xls,.xlsx" onChange={this.handleExcelFileUpload} />
-        <Button color="primary" onClick={this.handleUpload} style={{width:"190px",marginTop:"5px"}}>Upload</Button>
+        <Button color="primary" onClick={this.uploadFile} style={{width:"190px",marginTop:"5px"}}>Upload</Button>
       </InputGroup>
     </FormGroup>
   </div>
 </form>
-
-
-
         <h1 className="page-title">
           Dashboard &nbsp;
           <small>
@@ -506,5 +551,18 @@ class Dashboard extends React.Component {
     );
   }
 }
+const mapDispatchToProps = (dispatch) => {
+  return {
+    dispatchSetData: (value) => dispatch(setData(value)),
+    dispatchuploadExcelData: (value) => dispatch(uploadExcelData(value))
+   
+  };
+};
 
-export default Dashboard;
+function mapStateToProps(state) {
+  return {
+      value: state.value,
+      
+  };
+}
+export default withRouter(connect(mapStateToProps,mapDispatchToProps)(Dashboard));

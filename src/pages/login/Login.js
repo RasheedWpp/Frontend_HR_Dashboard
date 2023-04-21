@@ -6,7 +6,7 @@ import { Container, Alert, Button, FormGroup, Label, InputGroup, InputGroupAddon
 import Widget from '../../components/Widget';
 import { loginUser,getOtp } from '../../actions/user';
 import microsoft from '../../assets/microsoft.png';
-import { setValue } from '../../actions/user';
+import { setData } from '../../actions/user';
 import { useDispatch, useSelector } from 'react-redux';
 
 
@@ -14,13 +14,11 @@ import { useDispatch, useSelector } from 'react-redux';
 
 
 class Login extends React.Component {
-    
-    
-
     static propTypes = {
         dispatch: PropTypes.func.isRequired,
         value: PropTypes.string.isRequired,
-        setValue: PropTypes.func.isRequired,
+        setData: PropTypes.func.isRequired,
+        sessionToken: PropTypes.string.isRequired,
     };
 
     static isAuthenticated(token) {
@@ -30,11 +28,10 @@ class Login extends React.Component {
     constructor(props) {
         
         super(props);
-        console.log("Outer",this.props.location)
         this.state = {
             email: '',
             password: '',
-            open:false,
+            open:true,
             file: null,
             fileName: '',
         };
@@ -76,14 +73,16 @@ class Login extends React.Component {
         window.location.href = 'https://www.google.com'; 
     }
     handleClick = () => {
-        this.props.dispatchSetValue('new value');
+        this.props.dispatchSetData('new value');
     }   
     
     
      
 
     render() {
-        const { value, setValue } = this.props;
+        const { value, sessionToken } = this.props;
+        // console.log("value",value)
+        // console.log("sessionToken",sessionToken.value)
         const  from  =   '/app/main/dashboard'  ; // eslint-disable-line
         // cant access login page while logged in
         if (Login.isAuthenticated(JSON.parse(localStorage.getItem('authenticated')))) {
@@ -165,7 +164,7 @@ class Login extends React.Component {
 }
 const mapDispatchToProps = (dispatch) => {
     return {
-      dispatchSetValue: (value) => dispatch(setValue(value)),
+      dispatchSetData: (value) => dispatch(setData(value)),
       dispatchgetOtp: (value) => dispatch(getOtp(value)),
       dispatchloginUser: (value) => dispatch(loginUser(value))
     };
@@ -177,6 +176,7 @@ function mapStateToProps(state) {
         isAuthenticated: state.auth.isAuthenticated,
         errorMessage: state.auth.errorMessage,
         value: state.value,
+        sessionToken: state.sessionToken,
         
     };
 }
